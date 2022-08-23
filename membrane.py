@@ -9,7 +9,7 @@ class Membrane:
         self.parent = parent
         self.universe = list(set([rule.lhs.keys() for rule in self.rules]))
         self.app_matrix = np.zeros(shape = (len(self.rules), len(self.universe)))
-        #self.rule_cardinality = np.array([Multiset.cardinality(rule.lhs) for rule in self.rules])
+        self.rule_cardinality = np.array([Multiset.cardinality(rule.lhs) for rule in self.rules])
     
     ################# PRIVATE METHODS ###################
 
