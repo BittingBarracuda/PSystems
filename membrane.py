@@ -8,13 +8,13 @@ class Membrane:
         self.rules = Membrane.__sort_rules_by_priority(rules)
         self.parent = parent
         self.universe = list(set([rule.lhs.keys() for rule in self.rules]))
-        self.app_matrix = np.zeros(shape = (len(self.rules), len(self.universe)))
-        self.rule_cardinality = np.array([Multiset.cardinality(rule.lhs) for rule in self.rules])
+        #self.app_matrix = np.zeros(shape = (len(self.rules), len(self.universe)))
+        #self.rule_cardinality = np.array([Multiset.cardinality(rule.lhs) for rule in self.rules])
     
     ################# PRIVATE METHODS ###################
 
-    def __clear_matrix(self):
-        self.app_matrix = np.zeros(shape = (len(self.rules), len(self.universe)))
+    #def __clear_matrix(self):
+    #    self.app_matrix = np.zeros(shape = (len(self.rules), len(self.universe)))
 
     def __get_applicable_rules(self):
         return [(rule, Multiset.how_many_times_included(rule, self.contents)) for rule in self.rules]
