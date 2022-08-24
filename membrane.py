@@ -24,7 +24,12 @@ class Membrane:
         return Multiset.included(rule.lhs, self.contents)
 
     def __apply_rule(self, rule):
-        self.contents = (self.contents - rule.lhs) + rule.rhs
+        self.contents = self.contents - rule.lhs
+        self.__new_contents = self.__new_contents + rule.rhs
+    
+    def __add_new_contents(self):
+        self.contents = self.contents + self.__new_contents
+        self.__new_contents = Multiset()
     
     @staticmethod
     def __sort_rules_by_priority(rule_list):
