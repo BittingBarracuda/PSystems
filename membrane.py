@@ -9,19 +9,26 @@ class Membrane:
         self.parent = parent
         self.universe = list(set([rule.lhs.keys() for rule in self.rules]))
         self.__new_contents = Multiset()
-        #self.app_matrix = np.zeros(shape = (len(self.rules), len(self.universe)))
-        #self.rule_cardinality = np.array([Multiset.cardinality(rule.lhs) for rule in self.rules])
+        self.__app_matrix = np.zeros(shape = (len(self.rules), len(self.universe)))
+        self.__num_applications = np.zeros(shape = (len(self.rules, )))
     
     ################# PRIVATE METHODS ###################
 
-    #def __clear_matrix(self):
-    #    self.app_matrix = np.zeros(shape = (len(self.rules), len(self.universe)))
+    def __clear_matrix(self):
+        self.__app_matrix = np.zeros(shape = (len(self.rules), len(self.universe)))
 
     def __get_applicable_rules(self):
         return [(rule, Multiset.how_many_times_included(rule, self.contents)) for rule in self.rules]
     
     def __is_applicable(self, rule):
         return Multiset.included(rule.lhs, self.contents)
+
+    def __compute_app_matrix(self):
+        contents_vector = Multiset.compute_np_vector(self.contents, self.universe)
+        self.__app_matrix = np.array([Multiset.comput_np_vector(rule.lhs, self.universe) for rule in self.rules])
+        
+
+
 
     def __apply_rule(self, rule):
         self.contents = self.contents - rule.lhs
@@ -49,7 +56,7 @@ class Membrane:
         else:
             return []
     
-    ################# PUBLIC METHODS ####################
+    #################### PUBLIC METHODS #########################
 
     #def compute_step(self):
     #    rule_blocks = self.__get_rule_blocks()

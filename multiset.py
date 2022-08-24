@@ -68,6 +68,9 @@ class Multiset:
     def cardinality(self):
         return sum(self.multiset.values())
     
+    def compute_np_vector(self, m1):
+        return np.array([self.multiset.get(key, 0) for key in m1.multiset.keys()])
+    
     ############################## OPERATIONS WITH MULTISETS (STATIC METHODS) ###########################
 
     @staticmethod
@@ -106,3 +109,7 @@ class Multiset:
     @staticmethod
     def cardinality(m1):
         return sum(m1.multiset.values())
+    
+    @staticmethod 
+    def compute_np_vector(m1, m2):
+        return np.array(m1.multiset.get(key, 0) for key in m2.multiset.keys())
