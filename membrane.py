@@ -31,6 +31,10 @@ class Membrane:
         self.contents = self.contents - rule.lhs
         self.__new_contents = self.__new_contents + rule.rhs
     
+    def __apply_rule(self, rule, amount):
+        self.contents = self.contents - (amount * rule.lhs)
+        self.__new_contents = self.__new_contents + (amount * rule.rhs)
+    
     def __add_new_contents(self):
         self.contents = self.contents + self.__new_contents
         self.__new_contents = Multiset()
