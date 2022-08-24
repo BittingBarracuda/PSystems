@@ -13,6 +13,7 @@ class Membrane:
         self.num_applications = np.zeros(shape = (len(self.rules, )))
     
     ################# PRIVATE METHODS ###################
+    
     def __compute_np_matrix(self):
         return np.array([Multiset.compute_np_vector(rule.lhs, self.universe) for rule in self.rules])
 
@@ -22,11 +23,11 @@ class Membrane:
     def __is_applicable(self, rule):
         return Multiset.included(rule.lhs, self.contents)
 
-    # TODO: Implement a correct way of computing num_applications
     def __compute_num_applications(self):
         contents_vector = Multiset.compute_np_vector(self.contents, self.universe)
-        temp_matrix = self.__np_matrix - contents_vector
-        self.num_applications = np.min(temp_matrix, axis = 1)
+        aux = contents_vector // self.__np_matrix
+        temp_matrix = np.where(aux == np.nan, np.inf, aux)
+        self.num_applications = np.min(temp_matrix, axis = 1).astype(int)
 
     def __apply_rule(self, rule):
         self.contents = self.contents - rule.lhs
