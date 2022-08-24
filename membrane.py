@@ -8,6 +8,7 @@ class Membrane:
         self.rules = Membrane.__sort_rules_by_priority(rules)
         self.parent = parent
         self.universe = list(set([rule.lhs.keys() for rule in self.rules]))
+        self.__new_contents = Multiset()
         #self.app_matrix = np.zeros(shape = (len(self.rules), len(self.universe)))
         #self.rule_cardinality = np.array([Multiset.cardinality(rule.lhs) for rule in self.rules])
     

@@ -1,7 +1,7 @@
 import numpy as np
 
 class Multiset:
-    def __init__(self, input):
+    def __init__(self, input = None):
         if type(input) == dict:
             # Check if keys are strings and values are integers
             if (not all([type(x) == int for x in input.values()])) or (not all([type(x) == str for x in input.keys()])):
@@ -11,8 +11,10 @@ class Multiset:
             self.multiset = {}
             for char in input:
                 self.multiset[char] = self.multiset.get(char, 0) + 1
-        elif type(input) == Multiset:
+        elif isinstance(input, Multiset):
             self.multiset = input.multiset.copy()
+        elif input == None:
+            self.multiset = dict()
         else:
             raise TypeError("Input must be: String, Dictionary or Multiset!")
     
