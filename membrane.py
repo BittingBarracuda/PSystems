@@ -9,13 +9,12 @@ class Membrane:
         self.parent = parent
         self.universe = list(set([rule.lhs.keys() for rule in self.rules]))
         self.__new_contents = Multiset()
-        self.__app_matrix = np.zeros(shape = (len(self.rules), len(self.universe)))
-        self.__num_applications = np.zeros(shape = (len(self.rules, )))
+        self.__np_matrix = self.__compute_np_matrix()
+        self.num_applications = np.zeros(shape = (len(self.rules, )))
     
     ################# PRIVATE METHODS ###################
-
-    def __clear_matrix(self):
-        self.__app_matrix = np.zeros(shape = (len(self.rules), len(self.universe)))
+    def __compute_np_matrix(self):
+        return np.array([Multiset.compute_np_vector(rule.lhs, self.universe) for rule in self.rules])
 
     def __get_applicable_rules(self):
         return [(rule, Multiset.how_many_times_included(rule, self.contents)) for rule in self.rules]
@@ -23,12 +22,10 @@ class Membrane:
     def __is_applicable(self, rule):
         return Multiset.included(rule.lhs, self.contents)
 
-    def __compute_app_matrix(self):
+    def __compute_num_applications(self):
         contents_vector = Multiset.compute_np_vector(self.contents, self.universe)
-        self.__app_matrix = np.array([Multiset.comput_np_vector(rule.lhs, self.universe) for rule in self.rules])
-        
-
-
+        temp_matrix = self.__np_matrix - contents_vector
+        self.num_applications = np.min(temp_matrix, axis = 1)
 
     def __apply_rule(self, rule):
         self.contents = self.contents - rule.lhs

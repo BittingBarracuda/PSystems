@@ -69,7 +69,7 @@ class Multiset:
         return sum(self.multiset.values())
     
     def compute_np_vector(self, m1):
-        return np.array([self.multiset.get(key, 0) for key in m1.multiset.keys()])
+        return np.array([self.multiset.get(key, np.nan) for key in m1.multiset.keys()])
     
     ############################## OPERATIONS WITH MULTISETS (STATIC METHODS) ###########################
 
