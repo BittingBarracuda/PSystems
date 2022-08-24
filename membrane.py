@@ -22,6 +22,7 @@ class Membrane:
     def __is_applicable(self, rule):
         return Multiset.included(rule.lhs, self.contents)
 
+    # TODO: Implement a correct way of computing num_applications
     def __compute_num_applications(self):
         contents_vector = Multiset.compute_np_vector(self.contents, self.universe)
         temp_matrix = self.__np_matrix - contents_vector
@@ -59,9 +60,8 @@ class Membrane:
     
     #################### PUBLIC METHODS #########################
 
-    #def compute_step(self):
-    #    rule_blocks = self.__get_rule_blocks()
-    #    while len(rule_blocks) > 0:
+    def compute_step(self):
+        pass
 
 
 

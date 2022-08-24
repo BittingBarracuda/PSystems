@@ -121,4 +121,4 @@ class Multiset:
     
     @staticmethod 
     def compute_np_vector(m1, m2):
-        return np.array(m1.multiset.get(key, 0) for key in m2.multiset.keys())
+        return np.array(m1.multiset.get(key, np.nan) for key in m2.multiset.keys())
