@@ -48,6 +48,15 @@ class Multiset:
         res = {key : max(self.multiset.get(key, 0) - m1.multiset.get(key, 0), 0) for key in keys}
         return Multiset(res)
     
+    def __mul__(self, other):
+        if type(other) != int:
+            raise TypeError("Multisets can only be multiplied by an integer!")
+        res = {key: other * self.multiset[key] for key in self.multiset.keys()}
+        return Multiset(res)
+    
+    def __rmul__(self, other):
+        return self.__mul__(other)
+    
     def union(self, m1):
         keys = Multiset.__get_all_keys(self, m1)
         res = {key: max(self.multiset.get(key, 0), m1.multiset.get(key, 0)) for key in keys}
