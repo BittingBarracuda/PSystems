@@ -20,6 +20,8 @@ class Membrane:
         # The rules of each membrane generate "blocks", the first block contains the rules with the higher
         # level of priority, and so on.
         self.__rule_blocks_shape = self.__rule_blocks()
+        # We create a matrix of rules with the same shape of self.__rule_blocks_shape
+        self.__rules_matrix = self.__compute_rule_matrix()
         # Matrix that contains the number of objects that each rule uses. If an object is not present
         # in the LHS of a rule, that number gets set to 0.
         self.__rules_np = np.array([rule.get(key, 0) for rule in self.rules for key in rule.lhs.keys()])
@@ -31,14 +33,17 @@ class Membrane:
     
     ################# PRIVATE METHODS ###################
     
-    def __compute_np_matrix(self):
-        return np.tile(np.array([self.contents.get(key, 0) for key in self.universe]), (len(self.rules), 1))
-
     def __get_applicable_rules(self):
         return [(rule, Multiset.how_many_times_included(rule, self.contents)) for rule in self.rules]
     
     def __is_applicable(self, rule):
         return Multiset.included(rule.lhs, self.contents)
+
+    def __compute_rule_matrix(self):
+        pass
+    
+    def __compute_np_matrix(self):
+        return np.tile(np.array([self.contents.get(key, 0) for key in self.universe]), (len(self.rules), 1))
 
     def __compute_application(self):
         # We iterate over the rule blocks
@@ -60,9 +65,7 @@ class Membrane:
                 if not np.any(np.array([self.__is_applicable(rule) for rule in self.rules[i]])):
                     keep_block = False
                     i += 1
-            
-                
-    
+              
     def __rule_blocks(self):
         priority_list = [x.priority for x in self.rules]
         current_priority = priority_list[0]
