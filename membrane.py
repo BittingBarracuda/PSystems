@@ -24,7 +24,7 @@ class Membrane:
         self.__rules_matrix = self.__compute_rule_matrix()
         # Matrix that contains the number of objects that each rule uses. If an object is not present
         # in the LHS of a rule, that number gets set to 0.
-        self.__rules_np = np.array([rule.get(key, 0) for rule in self.rules for key in rule.lhs.keys()])
+        self.__rules_np = np.array([rule.get(key, 0) for rule in self.rules for key in self.contents.keys()])
         # Matrix that contains a replicated array with the contents present in the membrane. If an object
         # of the universe is not present in the membrane, then it's number gets set to 0. This matrix needs
         # to be computed at each step.
