@@ -40,8 +40,14 @@ class Membrane:
         return Multiset.included(rule.lhs, self.contents)
 
     def __compute_rule_matrix(self):
-        pass
-    
+        matrix, k = [], 0
+        for i in range(self.__rule_blocks_shape[0]):
+            matrix.append([])
+            for j in range(self.__rule_blocks_shape[1]):
+                matrix[i].append(self.rules[k])
+                k += 1
+        return matrix
+
     def __compute_np_matrix(self):
         return np.tile(np.array([self.contents.get(key, 0) for key in self.universe]), (len(self.rules), 1))
 
@@ -59,10 +65,10 @@ class Membrane:
                 # then the rule cannot be applied
                 if np.all(aux[rule_index] >= 0):
                     self.__np_matrix = self.__np_matrix - rule_to_apply
-                    self.__apply_rule(self.rules[i][rule_index])
+                    self.__apply_rule(self.__rules_matrix[i][rule_index])
                 # Checking if we can still apply some rule in the current block. In case that it's not possible
                 # then we skip to the next block
-                if not np.any(np.array([self.__is_applicable(rule) for rule in self.rules[i]])):
+                if not np.any(np.array([self.__is_applicable(rule) for rule in self.__rules_matrix[i]])):
                     keep_block = False
                     i += 1
               
