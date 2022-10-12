@@ -27,7 +27,6 @@ class Membrane:
         # Numpy array with the amount of each object in the membrane's contents. This array needs to be updated
         # after the application of each rule.
         self.__np_contents = np.array([self.contents.get(obj, -np.inf) for obj in self.universe])
-        print(self.__np_contents)
         # List of numpy matrices that contain de number of objects that each rule uses.
         self.__np_rule_matrix = self.__get_np_rule_matrix()
 
@@ -71,40 +70,29 @@ class Membrane:
             for rule in rule_block:
                 aux_arr.append(np.array([rule.lhs.get(obj, -np.inf) for obj in self.universe]))
             matrix.append(np.row_stack(tuple((arr for arr in aux_arr))))
-        print(matrix)
         return matrix
 
     def __compute_step(self):
+        print(f'Contents in {self.id}: {self.contents}')
         # Iterate over blocks of rules
-        for rule_block, matrix in zip(self.__rule_blocks, self.__np_rule_matrix):
+        for rule_block in self.__rule_blocks:
             # Get only the applicable rules in the current block
             filter_applicable = [self.__is_applicable(rule) for rule in rule_block]
             rule_block_f = list(compress(rule_block, filter_applicable))
-            matrix_f = matrix[filter_applicable, :]
             keep_block = any(filter_applicable)
             while keep_block:
                 # Select the rule to apply using some algorithm from algorithms.py
-                rule_index, rule_to_apply = algorithms.random_selection(rule_block_f)
-                # Obtain de numpy array of that rule
-                np_rule = matrix_f[rule_index, :]
-                print(f'np_rule -> {np_rule}')
-                print(f'np_contents -> {self.__np_contents}')
+                _, rule_to_apply = algorithms.random_selection(rule_block_f)
                 # Create an auxiliary array that simulates the application of the rule
-                aux_arr = self.__np_contents - np_rule
-                aux_arr[(aux_arr == np.nan) | (aux_arr == -np.inf)] = np.inf
-                # If all the elements of auxiliary array are non-negative, then the rule can be applied
-                if np.all(aux_arr >= 0):
-                    self.__np_contents = self.__np_contents - np_rule
-                    self.__apply_rule(rule_to_apply)
+                self.__apply_rule(rule_to_apply)
                 # Check if we can keep applying some rule of the current block. In case that we don't
                 # we skip to the next block
                 filter_applicable = [self.__is_applicable(rule) for rule in rule_block_f]
-                rule_block_f = list(compress(rule_block, filter_applicable))
-                matrix_f = matrix[filter_applicable, :]
+                rule_block_f = list(compress(rule_block_f, filter_applicable))
                 keep_block = any(filter_applicable)
 
     def __dump_contents(self, cont):
-        self.contents = self.contents + cont
+        self.__new_contents = self.__new_contents + cont
 
     def __apply_rule(self, rule):
         self.contents = self.contents - rule.lhs

@@ -69,7 +69,7 @@ class Multiset:
     
     def included(self, m1):
         keys = Multiset.__get_intersect_keys(self, m1)
-        return all([self.multiset[key] <= m1.multiset[key] for key in keys])
+        return keys != set() and all([self.multiset[key] <= m1.multiset[key] for key in keys])
     
     def support(self):
         return self.multiset.keys()
@@ -109,7 +109,7 @@ class Multiset:
     @staticmethod
     def included(m1, m2):
         keys = Multiset.__get_intersect_keys(m1, m2)
-        return all([m1.multiset[key] <= m2.multiset[key] for key in keys])
+        return keys != set() and all([m1.multiset[key] <= m2.multiset[key] for key in keys])
 
     @staticmethod
     def how_many_times_included(m1, m2):
