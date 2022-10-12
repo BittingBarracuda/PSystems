@@ -80,6 +80,12 @@ class Multiset:
     def compute_np_vector(self, m1):
         return np.array([self.multiset.get(key, np.nan) for key in m1.multiset.keys()])
     
+    def keys(self):
+        return self.multiset.keys()
+    
+    def get(self, default = None):
+        return self.multiset.get(self, default)
+    
     ############################## OPERATIONS WITH MULTISETS (STATIC METHODS) ###########################
 
     @staticmethod
