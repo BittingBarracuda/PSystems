@@ -17,19 +17,16 @@ class Membrane:
         # New contents is just a multiset that stores the new objects generated in each computation step
         # At the end of each step, these contents get dumped in self.contents
         self.__new_contents = Multiset()
-        # The rules of each membrane generate "blocks", the first block contains the rules with the higher
-        # level of priority, and so on.
+        # Shape of the rules by block. The first block contains the rules with higher priority, and so on
         self.__rule_blocks_shape = self.__rule_blocks()
-        # We create a matrix of rules with the same shape of self.__rule_blocks_shape
-        self.__rules_matrix = self.__compute_rule_matrix()
-        # Matrix that contains the number of objects that each rule uses. If an object is not present
-        # in the LHS of a rule, that number gets set to 0.
-        self.__rules_np = np.array([rule.get(key, 0) for rule in self.rules for key in self.contents.keys()])
-        # Matrix that contains a replicated array with the contents present in the membrane. If an object
-        # of the universe is not present in the membrane, then it's number gets set to 0. This matrix needs
-        # to be computed at each step.
-        self.__np_matrix = self.__compute_np_matrix
-        #self.__num_applications = np.zeros(shape = (len(self.rules, )))
+        self.__rule_blocks = self.__compute_rule_matrix()
+        # Numpy array with the amount of each object in the membrane's contents. This array needs to be updated
+        # after the application of each rule.
+        self.__np_contents = np.array([self.contents.get(obj, -np.inf) for obj in self.universe.keys()])
+        # List of numpy matrices that contain de number of objects that each rule uses.
+        self.__np_rule_matrix = self.__get_np_rule_matrix()
+
+        
     
     ################# PRIVATE METHODS ###################
     
@@ -38,7 +35,7 @@ class Membrane:
     
     def __is_applicable(self, rule):
         return Multiset.included(rule.lhs, self.contents)
-
+    
     def __compute_rule_matrix(self):
         matrix, k = [], 0
         for i in range(self.__rule_blocks_shape[0]):
@@ -47,31 +44,7 @@ class Membrane:
                 matrix[i].append(self.rules[k])
                 k += 1
         return matrix
-
-    def __compute_np_matrix(self):
-        return np.tile(np.array([self.contents.get(key, 0) for key in self.universe]), (len(self.rules), 1))
-
-    def __compute_application(self):
-        # We iterate over the rule blocks
-        i = 0
-        for block in self.__rules_np:
-            keep_block = True
-            while keep_block:
-                # For each block we select a rule using certain algorithm
-                rule_index, rule_to_apply = algorithms.random_selection(block)
-                # We "apply" the rule saving an auxiliary matrix
-                aux = self.__np_matrix - rule_to_apply
-                # Checking if the rule can be applied. If any value gets below 0 
-                # then the rule cannot be applied
-                if np.all(aux[rule_index] >= 0):
-                    self.__np_matrix = self.__np_matrix - rule_to_apply
-                    self.__apply_rule(self.__rules_matrix[i][rule_index])
-                # Checking if we can still apply some rule in the current block. In case that it's not possible
-                # then we skip to the next block
-                if not np.any(np.array([self.__is_applicable(rule) for rule in self.__rules_matrix[i]])):
-                    keep_block = False
-                    i += 1
-              
+    
     def __rule_blocks(self):
         priority_list = [x.priority for x in self.rules]
         current_priority = priority_list[0]
@@ -82,7 +55,37 @@ class Membrane:
                 temp_array.append([])
             temp_array[-1].append(0)
         return np.array(temp_array).shape
-        
+    
+    def __get_np_rule_matrix(self):
+        matrix = []
+        for rule_block in self.__rule_blocks:
+            aux_arr = []
+            for rule in rule_block:
+                aux_arr.append(np.array([rule.lhs.get(obj, -np.inf) for obj in self.universe.keys()]))
+            matrix.append(np.row_stack((arr for arr in aux_arr)))
+        return matrix
+
+    def __compute_step(self):
+        # Iterate over blocks of rules
+        for rule_block, matrix in zip(self.__rule_blocks, self.__np_rule_matrix):
+            keep_block = True
+            while keep_block:
+                # Select the rule to apply using some algorithm from algorithms.py
+                rule_index, rule_to_apply = algorithms.random_selection(rule_block)
+                # Obtain de numpy array of that rule
+                np_rule = matrix[rule_index, :]
+                # Create an auxiliary array that simulates the application of the rule
+                aux_arr = self.__np_contents - np_rule
+                aux_arr[aux_arr == np.nan] = np.inf
+                # If all the elements of auxiliary array are non-negative, then the rule can be applied
+                if np.all(aux_arr >= 0):
+                    self.__np_contents = self.__np_contents - np_rule
+                    self.__apply_rule(rule_to_apply)
+                # Check if we can keep applying some rule of the current block. In case that we don't
+                # we skip to the next block
+                if not any([self.__is_applicable(rule) for rule in rule_block]):
+                    keep_block = False
+
     def __apply_rule(self, rule):
         self.contents = self.contents - rule.lhs
         self.__new_contents = self.__new_contents + rule.rhs
@@ -102,7 +105,8 @@ class Membrane:
     #################### PUBLIC METHODS #########################
 
     def compute_step(self):
-        pass
+        self.__compute_step()
+        self.__add_new_contents()
 
 
 
