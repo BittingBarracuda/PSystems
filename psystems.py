@@ -1,8 +1,7 @@
-from re import M
 from membrane import Membrane
 from multiset import Multiset, MultisetDestination
 from rule import Rule
-import numpy as np
+import time
 
 class PSystem:
     def __init__(self, root, membranes):
@@ -24,6 +23,7 @@ class PSystem:
 
 
 if __name__ == "__main__":
+    start_time = time.time()
     rules1 = [Rule(Multiset({"a":1}), Multiset({"b":1}), 1.0), 
             Rule(Multiset({"b":1}), MultisetDestination(destinations = {"b":(1, 2)}), 1.0),
             Rule(Multiset({"b":1}), MultisetDestination(destinations = {"b":(1, "out")}), 0.5)]
@@ -32,5 +32,6 @@ if __name__ == "__main__":
     membrane1 = Membrane(1, Multiset({"a":1}), rules1, adjacents = [membrane2])
     membrane2.set_parent(membrane1)
     psys = PSystem(membrane1, [membrane1, membrane2])
-    max_steps = 10
+    max_steps = 100
     psys.start(max_steps = max_steps)
+    print(f'Exectuion time = {time.time() - start_time}')
