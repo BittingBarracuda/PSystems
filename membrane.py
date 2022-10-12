@@ -23,12 +23,12 @@ class Membrane:
         self.__new_contents = Multiset()
         # Shape of the rules by block. The first block contains the rules with higher priority, and so on
         self.__rule_blocks_shape = self.__rule_blocks()
-        self.__rule_blocks = self.__compute_rule_matrix()
+        self.__rule_blocks_matrix = self.__compute_rule_matrix()
         # Numpy array with the amount of each object in the membrane's contents. This array needs to be updated
         # after the application of each rule.
-        self.__np_contents = np.array([self.contents.get(obj, -np.inf) for obj in self.universe])
+        # self.__np_contents = np.array([self.contents.get(obj, -np.inf) for obj in self.universe])
         # List of numpy matrices that contain de number of objects that each rule uses.
-        self.__np_rule_matrix = self.__get_np_rule_matrix()
+        # self.__np_rule_matrix = self.__get_np_rule_matrix()
 
         
     
@@ -45,9 +45,9 @@ class Membrane:
     
     def __compute_rule_matrix(self):
         matrix, k = [], 0
-        for i in range(self.__rule_blocks_shape[0]):
+        for i in range(len(self.__rule_blocks_shape)):
             matrix.append([])
-            for j in range(self.__rule_blocks_shape[1]):
+            for _ in range(len(self.__rule_blocks_shape[i])):
                 matrix[i].append(self.rules[k])
                 k += 1
         return matrix
@@ -61,11 +61,12 @@ class Membrane:
                 current_priority = priority_list[i]
                 temp_array.append([])
             temp_array[-1].append(0)
-        return np.array(temp_array).shape
+        #print(f'temp_array -> {temp_array}')
+        return temp_array
     
     def __get_np_rule_matrix(self):
         matrix = []
-        for rule_block in self.__rule_blocks:
+        for rule_block in self.__rule_blocks_matrix:
             aux_arr = []
             for rule in rule_block:
                 aux_arr.append(np.array([rule.lhs.get(obj, -np.inf) for obj in self.universe]))
@@ -75,14 +76,14 @@ class Membrane:
     def __compute_step(self):
         print(f'Contents in {self.id}: {self.contents}')
         # Iterate over blocks of rules
-        for rule_block in self.__rule_blocks:
+        for rule_block in self.__rule_blocks_matrix:
             # Get only the applicable rules in the current block
             filter_applicable = [self.__is_applicable(rule) for rule in rule_block]
             rule_block_f = list(compress(rule_block, filter_applicable))
             keep_block = any(filter_applicable)
             while keep_block:
                 # Select the rule to apply using some algorithm from algorithms.py
-                _, rule_to_apply = algorithms.random_selection(rule_block_f)
+                index, rule_to_apply = algorithms.random_selection(rule_block_f)
                 # Create an auxiliary array that simulates the application of the rule
                 self.__apply_rule(rule_to_apply)
                 # Check if we can keep applying some rule of the current block. In case that we don't
@@ -115,23 +116,23 @@ class Membrane:
     #    self.contents = self.contents - (amount * rule.lhs)
     #    self.__new_contents = self.__new_contents + (amount * rule.rhs)
     
-    def __add_new_contents(self):
-        self.contents = self.contents + self.__new_contents
-        self.__new_contents = Multiset()
-    
     @staticmethod
     def __sort_rules_by_priority(rule_list):
-        return sorted(rule_list, key = lambda x: x.priority)
+        return sorted(rule_list, key = lambda x: x.priority, reverse = True)
     
     #################### PUBLIC METHODS #########################
 
     def compute_step(self):
         bool_ret = any([self.__is_applicable(rule) for rule in self.rules])
         self.__compute_step()
-        self.__add_new_contents()
         return bool_ret
 
-
+    def set_parent(self, parent):
+        self.parent = parent
+    
+    def add_new_contents(self):
+        self.contents = self.contents + self.__new_contents
+        self.__new_contents = Multiset()
 
 
     

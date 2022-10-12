@@ -7,3 +7,5 @@ class Rule:
         self.priority = priority
         self.dissolve = dissolve
     
+    def __repr__(self):
+        res = self.lhs + " ----> " + self.rhs + ", Priority = " + self.priority + ", Dissolve = " + self.dissolve
