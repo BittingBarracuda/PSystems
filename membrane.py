@@ -1,6 +1,7 @@
 from multiset import Multiset
 import algorithms
 import numpy as np
+from itertools import compress
 
 class Membrane:
     def __init__(self, id, contents, rules, parent = None):
@@ -68,23 +69,29 @@ class Membrane:
     def __compute_step(self):
         # Iterate over blocks of rules
         for rule_block, matrix in zip(self.__rule_blocks, self.__np_rule_matrix):
-            keep_block = True
+            # Get only the applicable rules in the current block
+            filter_applicable = [self.__is_applicable(rule) for rule in rule_block]
+            rule_block_f = list(compress(rule_block, filter_applicable))
+            matrix_f = matrix[filter_applicable, :]
+            keep_block = any(filter_applicable)
             while keep_block:
                 # Select the rule to apply using some algorithm from algorithms.py
-                rule_index, rule_to_apply = algorithms.random_selection(rule_block)
+                rule_index, rule_to_apply = algorithms.random_selection(rule_block_f)
                 # Obtain de numpy array of that rule
-                np_rule = matrix[rule_index, :]
+                np_rule = matrix_f[rule_index, :]
                 # Create an auxiliary array that simulates the application of the rule
                 aux_arr = self.__np_contents - np_rule
-                aux_arr[aux_arr == np.nan] = np.inf
+                aux_arr[aux_arr == np.nan | aux_arr == -np.inf] = np.inf
                 # If all the elements of auxiliary array are non-negative, then the rule can be applied
                 if np.all(aux_arr >= 0):
                     self.__np_contents = self.__np_contents - np_rule
                     self.__apply_rule(rule_to_apply)
                 # Check if we can keep applying some rule of the current block. In case that we don't
                 # we skip to the next block
-                if not any([self.__is_applicable(rule) for rule in rule_block]):
-                    keep_block = False
+                filter_applicable = [self.__is_applicable(rule) for rule in rule_block_f]
+                rule_block_f = list(compress(rule_block, filter_applicable))
+                matrix_f = matrix[filter_applicable, :]
+                keep_block = any(filter_applicable)
 
     def __apply_rule(self, rule):
         self.contents = self.contents - rule.lhs
