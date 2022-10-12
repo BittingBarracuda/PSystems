@@ -128,3 +128,8 @@ class Multiset:
     @staticmethod 
     def compute_np_vector(m1, m2):
         return np.array(m1.multiset.get(key, np.nan) for key in m2.multiset.keys())
+    
+class MultisetDestiation(Multiset):
+    def __init__(self, input = None, destinations = None):
+        super().__init__(self, input)
+        
