@@ -1,10 +1,10 @@
-from multiset import Multiset, MultisetDestiation
+from multiset import Multiset, MultisetDestination
 import algorithms
 import numpy as np
-from itertools import compress
+from itertools import compress, chain
 
 class Membrane:
-    def __init__(self, id, contents, rules, parent = None):
+    def __init__(self, id, contents, rules, parent = None, adjacents = []):
         # ID identifing the Membrane
         self.id = id
         # Dictionary with the contents of the membrane
@@ -13,8 +13,11 @@ class Membrane:
         self.rules = Membrane.__sort_rules_by_priority(rules)
         # Reference to its parent object. If the membrane is the root membrane then parent = None
         self.parent = parent
+        # List of references to the membranes contained in the current membrane
+        self.adjacents = adjacents
         # "Universe" of objects, meaning objects present in the LHS of the rules
-        self.universe = list(set([rule.lhs.keys() for rule in self.rules]))
+        aux = list(chain.from_iterable([list(rule.lhs.keys()) for rule in self.rules]))
+        self.universe = list(set(aux))
         # New contents is just a multiset that stores the new objects generated in each computation step
         # At the end of each step, these contents get dumped in self.contents
         self.__new_contents = Multiset()
@@ -23,13 +26,17 @@ class Membrane:
         self.__rule_blocks = self.__compute_rule_matrix()
         # Numpy array with the amount of each object in the membrane's contents. This array needs to be updated
         # after the application of each rule.
-        self.__np_contents = np.array([self.contents.get(obj, -np.inf) for obj in self.universe.keys()])
+        self.__np_contents = np.array([self.contents.get(obj, -np.inf) for obj in self.universe])
+        print(self.__np_contents)
         # List of numpy matrices that contain de number of objects that each rule uses.
         self.__np_rule_matrix = self.__get_np_rule_matrix()
 
         
     
     ################# PRIVATE METHODS ###################
+    
+    def __get_adjacent_ids(self):
+        return [mem.id for mem in self.adjacents]
     
     def __get_applicable_rules(self):
         return [(rule, Multiset.how_many_times_included(rule, self.contents)) for rule in self.rules]
@@ -51,8 +58,8 @@ class Membrane:
         current_priority = priority_list[0]
         temp_array = [[0]]
         for i in range(1, len(priority_list)):
-            if priority_list[i].priority != current_priority:
-                current_priority = priority_list[i].priority
+            if priority_list[i] != current_priority:
+                current_priority = priority_list[i]
                 temp_array.append([])
             temp_array[-1].append(0)
         return np.array(temp_array).shape
@@ -62,8 +69,9 @@ class Membrane:
         for rule_block in self.__rule_blocks:
             aux_arr = []
             for rule in rule_block:
-                aux_arr.append(np.array([rule.lhs.get(obj, -np.inf) for obj in self.universe.keys()]))
-            matrix.append(np.row_stack((arr for arr in aux_arr)))
+                aux_arr.append(np.array([rule.lhs.get(obj, -np.inf) for obj in self.universe]))
+            matrix.append(np.row_stack(tuple((arr for arr in aux_arr))))
+        print(matrix)
         return matrix
 
     def __compute_step(self):
@@ -79,9 +87,11 @@ class Membrane:
                 rule_index, rule_to_apply = algorithms.random_selection(rule_block_f)
                 # Obtain de numpy array of that rule
                 np_rule = matrix_f[rule_index, :]
+                print(f'np_rule -> {np_rule}')
+                print(f'np_contents -> {self.__np_contents}')
                 # Create an auxiliary array that simulates the application of the rule
                 aux_arr = self.__np_contents - np_rule
-                aux_arr[aux_arr == np.nan | aux_arr == -np.inf] = np.inf
+                aux_arr[(aux_arr == np.nan) | (aux_arr == -np.inf)] = np.inf
                 # If all the elements of auxiliary array are non-negative, then the rule can be applied
                 if np.all(aux_arr >= 0):
                     self.__np_contents = self.__np_contents - np_rule
@@ -93,15 +103,29 @@ class Membrane:
                 matrix_f = matrix[filter_applicable, :]
                 keep_block = any(filter_applicable)
 
+    def __dump_contents(self, cont):
+        self.contents = self.contents + cont
+
     def __apply_rule(self, rule):
         self.contents = self.contents - rule.lhs
         self.__new_contents = self.__new_contents + rule.rhs
-        if type(rule.rhs) == MultisetDestiation:
-            pass
+        if type(rule.rhs) == MultisetDestination:
+            adj_ids = self.__get_adjacent_ids()
+            for (obj, elem) in rule.rhs.destinations.items():
+                destination = elem[1]
+                if destination == "out":
+                    if self.parent != None:
+                        self.parent.__dump_contents(Multiset({obj:elem[0]}))
+                else:
+                    try:
+                        index = adj_ids.index(destination)
+                        self.adjacents[index].__dump_contents(Multiset({obj:elem[0]}))
+                    except ValueError:
+                        pass
     
-    def __apply_rule(self, rule, amount):
-        self.contents = self.contents - (amount * rule.lhs)
-        self.__new_contents = self.__new_contents + (amount * rule.rhs)
+    #def __apply_rule(self, rule, amount):
+    #    self.contents = self.contents - (amount * rule.lhs)
+    #    self.__new_contents = self.__new_contents + (amount * rule.rhs)
     
     def __add_new_contents(self):
         self.contents = self.contents + self.__new_contents

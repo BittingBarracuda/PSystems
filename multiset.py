@@ -22,7 +22,7 @@ class Multiset:
 
     @staticmethod
     def __get_all_keys(m1, m2):
-        return set(m1.multiset.keys() + m2.multiset.keys())
+        return set(list(m1.multiset.keys()) + list(m2.multiset.keys()))
 
     @staticmethod
     def __get_intersect_keys(m1, m2):
@@ -83,8 +83,14 @@ class Multiset:
     def keys(self):
         return self.multiset.keys()
     
-    def get(self, default = None):
-        return self.multiset.get(self, default)
+    def values(self):
+        return self.multiset.values()
+    
+    def items(self):
+        return self.multiset.items()
+    
+    def get(self, elem, default = None):
+        return self.multiset.get(elem, default)
     
     ############################## OPERATIONS WITH MULTISETS (STATIC METHODS) ###########################
 
@@ -129,8 +135,8 @@ class Multiset:
     def compute_np_vector(m1, m2):
         return np.array(m1.multiset.get(key, np.nan) for key in m2.multiset.keys())
     
-class MultisetDestiation(Multiset):
+class MultisetDestination(Multiset):
     def __init__(self, input = None, destinations = None):
-        super().__init__(self, input)
+        super().__init__(input)
         self.destinations = destinations
 
