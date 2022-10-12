@@ -1,4 +1,4 @@
-from multiset import Multiset
+from multiset import Multiset, MultisetDestiation
 import algorithms
 import numpy as np
 from itertools import compress
@@ -96,6 +96,8 @@ class Membrane:
     def __apply_rule(self, rule):
         self.contents = self.contents - rule.lhs
         self.__new_contents = self.__new_contents + rule.rhs
+        if type(rule.rhs) == MultisetDestiation:
+            pass
     
     def __apply_rule(self, rule, amount):
         self.contents = self.contents - (amount * rule.lhs)

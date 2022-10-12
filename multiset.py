@@ -132,4 +132,5 @@ class Multiset:
 class MultisetDestiation(Multiset):
     def __init__(self, input = None, destinations = None):
         super().__init__(self, input)
-        
+        self.destinations = destinations
+
