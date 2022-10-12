@@ -112,8 +112,10 @@ class Membrane:
     #################### PUBLIC METHODS #########################
 
     def compute_step(self):
+        bool_ret = any([self.__is_applicable(rule) for rule in self.rules])
         self.__compute_step()
         self.__add_new_contents()
+        return bool_ret
 
 
 
